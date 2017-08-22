@@ -1,0 +1,3 @@
+/Users/JAY/Desktop/Udacity/Self_Driving_Car/CarND-MPC-P10/build/CMakeFiles/rebuild_cache.dir
+/Users/JAY/Desktop/Udacity/Self_Driving_Car/CarND-MPC-P10/build/CMakeFiles/edit_cache.dir
+/Users/JAY/Desktop/Udacity/Self_Driving_Car/CarND-MPC-P10/build/CMakeFiles/mpc.dir
