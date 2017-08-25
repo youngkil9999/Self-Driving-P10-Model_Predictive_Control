@@ -3,6 +3,77 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+#### The model
+1. State : px(vehicle x position), py(vehicle y position), psi(vehicle angle from global coordinate x axis), v(velocity), cte(Cross Track Error), epsi(Orientation error)
+
+2. Actuator(control input) :
+delta(steering angle), a(acceleration)
+
+3. state update :
+
+  - px = px + v * cos(psi)* dt; //global vehicle x position
+
+  - py = py + v * sin(psi)* dt; //global vehicle y position
+
+  - psi = psi + v * steer_value * dt / Lf; //global vehicle angle
+
+  - v = v + throttle_value * dt; //vehicle speed
+
+  - cte = polyeval(coeffs, 0); //cross track error
+
+    (CTE is fitted in the vehicle coordinate so that makes the position of vehicle (0,0). If CTE is in global coordinate, then the position of vehicle changed to (x,y) and the equation will be changed like this, cte = polyeval(coeffs, px) - py.
+
+  - epsi = atan(coeffs[1]); //orientation error
+
+    (EPSI, same as CTE. the vehicle coordinate would make the position of px, py and psi equals to zero)
+
+
+#### Timestep and elapsed duration
+
+As I understood, timestep N could make expected path further. As N increases, the path, which is expected to be followed by vehicle, will be extended on the simulator
+
+Elapsed time, dt, present how quickly the predicted path calculated. As dt increases, the predicted vehicle movement delayed and as dt decreases, the vehicle responses quickly.
+
+
+#### Polynomial fitting and MPC processing
+
+As explained state equation. The coordinate was changed from global to vehicle to make the calculation easy.
+
+Firstly, we need to find the coefficient of 3rd order of polynomial with the vehicle coordinate. To calculate the coefficient, waypoints should be calculated based on the vehicle coordinate.
+
+    for (int i = 0; i<ptsx.size(); i++){
+              double shift_x = ptsx[i] - px;
+              double shift_y = ptsy[i] - py;
+
+              ptsx[i] = shift_x * cos(psi) + shift_y * sin(psi);
+              ptsy[i] = - shift_x * sin(psi) + shift_y * cos(psi);
+          }
+
+          double* ptrx = &ptsx[0];
+          Eigen::Map<Eigen::VectorXd> ptsx_transform(ptrx, 6);
+
+          double* ptry = &ptsy[0];
+          Eigen::Map<Eigen::VectorXd> ptsy_transform(ptry, 6);
+
+          auto coeffs = polyfit(ptsx_transform, ptsy_transform, 3);
+
+Then, we could find the y points of the vehicle for each x points with coeffs.
+
+          double cte = polyeval(coeffs, 0);
+
+#### Model latency
+
+    px = px + v * cos(psi)* latency; //global vehicle x position
+    py = py + v * sin(psi)* latency; //global vehicle y position
+    psi = psi + v * steer_value * latency / Lf; //global vehicle angle
+    v = v + throttle_value * latency; //vehicle speed
+
+Not quite sure I understood correctly.
+latency set to 0.05. There will be a delay as the calculation performed through the system. so, if we set the latency in our equation, px, py, psi, v. then it could compensate the difference of the result compared to when it calculated without latency.
+
+---
+# Original ReadMe
+
 ## Dependencies
 
 * cmake >= 3.5
